@@ -1,100 +1,140 @@
 "use client";
 
-import { motion, useScroll, useTransform, useInView } from "framer-motion";
-import { useState, useRef } from "react";
+import { motion, useScroll, useTransform, useInView, AnimatePresence } from "framer-motion";
+import { useState, useRef, useEffect } from "react";
 import Navbar from "./ui/Navbar";
+
+// ── Micro: animated gradient border ──────────────────────────────────────────
+const GlowBorder = ({ children, className = "", featured = false }) => (
+  <div className={`relative ${className}`}>
+    {featured && (
+      <div className="absolute -inset-[1px] rounded-3xl bg-gradient-to-br from-[#0EA5E9] via-[#06B6D4] to-[#0EA5E9] opacity-60 blur-[2px]" />
+    )}
+    <div className="relative">{children}</div>
+  </div>
+);
+
+// ── Micro: subtle noise grain overlay ────────────────────────────────────────
+const GrainOverlay = () => (
+  <div
+    className="pointer-events-none fixed inset-0 z-[999] opacity-[0.09]"
+    style={{
+      backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+      backgroundRepeat: "repeat",
+      backgroundSize: "128px",
+    }}
+  />
+);
+
+// ── Micro: section tag pill ───────────────────────────────────────────────────
+const SectionTag = ({ children }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 10 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true }}
+    transition={{ duration: 0.5 }}
+    className="inline-flex items-center gap-2 mb-6"
+  >
+    <span className="w-1.5 h-1.5 rounded-full bg-[#0EA5E9] shadow-[0_0_8px_2px_rgba(14,165,233,0.6)]" />
+    <span className="text-xs font-semibold tracking-[0.2em] uppercase text-[#0EA5E9]/80">
+      {children}
+    </span>
+  </motion.div>
+);
+
+// ── Micro: animated count-up ─────────────────────────────────────────────────
+const CountUp = ({ end, suffix = "" }) => {
+  const [val, setVal] = useState(0);
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true });
+  useEffect(() => {
+    if (!isInView) return;
+    let start = 0;
+    const step = end / 60;
+    const timer = setInterval(() => {
+      start += step;
+      if (start >= end) { setVal(end); clearInterval(timer); }
+      else setVal(Math.floor(start));
+    }, 16);
+    return () => clearInterval(timer);
+  }, [isInView, end]);
+  return <span ref={ref}>{val}{suffix}</span>;
+};
+
+// ── Thin divider ──────────────────────────────────────────────────────────────
+const Divider = () => (
+  <div className="w-full h-px bg-gradient-to-r from-transparent via-cyan-400/20 to-transparent my-2" />
+);
 
 export default function CondenserLanding() {
   const [currentReview, setCurrentReview] = useState(0);
+  const [inputValue, setInputValue] = useState("");
+  const [inputFocused, setInputFocused] = useState(false);
 
   const heroRef = useRef(null);
   const { scrollYProgress } = useScroll();
   const heroOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
-  const heroScale = useTransform(scrollYProgress, [0, 0.3], [1, 0.95]);
+  const heroScale = useTransform(scrollYProgress, [0, 0.3], [1, 0.97]);
 
   const reviews = [
-    {
-      name: "Chirag",
-      role: "Student",
-      text: "Condenser AI saved me hours during exam week. My 1-hour lectures became super quick to revise.",
-    },
-    {
-      name: "Darsh",
-      role: "Student",
-      text: "The AI Chapters feature is insane. I can jump directly to the topic I need in seconds.",
-    },
-    {
-      name: "Aryaman",
-      role: "Student",
-      text: "I used to watch lectures on 2x and still waste time. This actually removes the useless parts.",
-    },
-    {
-      name: "Nikhil",
-      role: "Student",
-      text: "AI Notes are clean and structured. Perfect for quick revision before tests and examinations.",
-    },
-    {
-      name: "Upanshi",
-      role: "Student",
-      text: "Best tool for backlog completion. I finished 3 lectures in the time it took to watch 1.",
-    },
-    {
-      name: "Suryanshu",
-      role: "GOAT",
-      text: "Simple UI, fast results, and the condensed video still keeps all important concepts.",
-    },
+    { name: "Ayush", role: "GOAT", text: "Condenser AI saved me hours during exam week. My 1-hour lectures became super quick to revise." },
+    { name: "Darsh", role: "Student", text: "The AI Chapters feature is insane. I can jump directly to the topic I need in seconds." },
+    { name: "Aryaman", role: "Student", text: "I used to watch lectures on 2x and still waste time. This actually removes the useless parts." },
+    { name: "Nikhil", role: "Student", text: "AI Notes are clean and structured. Perfect for quick revision before tests and examinations." },
+    { name: "Upanshi", role: "Student", text: "Best tool for backlog completion. I finished 3 lectures in the time it took to watch 1." },
+    { name: "Suryanshu", role: "Student", text: "Simple UI, fast results, and the condensed video still keeps all important concepts." },
   ];
 
   const features = [
     {
-      icon: "⚡",
+      icon: (
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      ),
+      tag: "Core",
       title: "Condense Long Lectures",
       subtitle: "Into Crisp, High-Value Learning",
-      description:
-        "Turn 50+ minute lectures into 15–20 minutes by removing pauses, filler, and repetition without losing key concepts.",
+      description: "Turn 50+ minute lectures into 15–20 minutes by removing pauses, filler, and repetition — without losing a single key concept.",
     },
     {
-      icon: "📝",
+      icon: (
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      ),
+      tag: "Intelligence",
       title: "AI Notes",
-      description:
-        "Get crisp, structured notes from every lecture in seconds — perfect for revision, exams, and quick understanding.",
+      description: "Get crisp, structured notes from every lecture in seconds — perfect for revision, exams, and quick understanding.",
     },
     {
-      icon: "📚",
+      icon: (
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M4 6h16M4 12h8m-8 6h16" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      ),
+      tag: "Navigation",
       title: "AI Chapters",
-      description:
-        "Auto split long lectures into clear topic wise chapters with timestamps.",
+      description: "Auto-split long lectures into clear, topic-wise chapters with precise timestamps — navigate like a pro.",
     },
   ];
 
-  const galleryVideos = [
-    { id: 1, title: "Physics Lecture", duration: "15:32", views: "1.2k" },
-    { id: 2, title: "Calculus Basics", duration: "12:45", views: "890" },
-    { id: 3, title: "Chemistry 101", duration: "18:20", views: "2.1k" },
-    { id: 4, title: "Biology Review", duration: "14:15", views: "1.5k" },
-    { id: 5, title: "History Notes", duration: "16:40", views: "980" },
-    { id: 6, title: "Economics", duration: "13:25", views: "1.8k" },
+  const stats = [
+    { value: 70, suffix: "%", label: "Average time saved" },
+    { value: 5000, suffix: "+", label: "Lectures condensed" },
+    { value: 98, suffix: "%", label: "Satisfaction rate" },
   ];
-
-  const nextReview = () => {
-    setCurrentReview((prev) => (prev + 1) % reviews.length);
-  };
-
-  const prevReview = () => {
-    setCurrentReview((prev) => (prev - 1 + reviews.length) % reviews.length);
-  };
 
   const SectionTitle = ({ children, delay = 0 }) => {
     const ref = useRef(null);
-    const isInView = useInView(ref, { once: true, margin: "-100px" });
-
+    const isInView = useInView(ref, { once: true, margin: "-80px" });
     return (
       <motion.h2
         ref={ref}
-        initial={{ opacity: 0, y: 50 }}
+        initial={{ opacity: 0, y: 40 }}
         animate={isInView ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.8, delay, ease: [0.22, 1, 0.36, 1] }}
-        className="text-5xl md:text-7xl font-black mb-6 tracking-tight"
+        transition={{ duration: 0.9, delay, ease: [0.22, 1, 0.36, 1] }}
+        className="text-4xl md:text-6xl font-black mb-4 tracking-tight leading-[1.05]"
       >
         {children}
       </motion.h2>
@@ -102,168 +142,311 @@ export default function CondenserLanding() {
   };
 
   return (
-    <div className="flex flex-col justify-center items-center bg-gradient-to-br from-[#171717] via-[#000000] to-[#040404] text-white min-h-screen overflow-x-hidden">
-      {/* Navigation */}
+    <div className="flex flex-col items-center bg-[#080808] text-white min-h-screen overflow-x-hidden">
+      <GrainOverlay />
+
+      {/* ── ambient glow ── */}
+      <div className="pointer-events-none fixed inset-0 z-0">
+       
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[100px] bg-[#FFF]/15 blur-[120px] rounded-full" />
+      </div>
+
       <Navbar />
 
-      <span className="w-[60%] h-[20%] absolute top-0 bg-blue-500 blur-[100px]"></span>
-
-      <span className="w-[40%] h-[20%] absolute top-0 bg-blue-200 blur-[100px]"></span>
-      {/* Hero Section */}
+      {/* ══════════════════════════════════════════════════════
+          HERO
+      ══════════════════════════════════════════════════════ */}
       <motion.section
         id="home"
         ref={heroRef}
         style={{ opacity: heroOpacity, scale: heroScale }}
-        className="min-h-screen flex items-center justify-center relative overflow-hidden pt-20"
+        className="min-h-screen w-full flex items-center justify-center relative pt-24 pb-16"
       >
-        <div className="max-w-6xl mx-auto px-6 text-center relative z-10">
+        <div className="max-w-5xl w-full mx-auto px-6 text-center relative z-10">
+
+          {/* Pill badge */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="inline-flex items-center gap-2.5 bg-white/[0.04] border border-white/[0.08] rounded-full px-4 py-1.5 mb-10"
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0EA5E9] opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#0EA5E9]" />
+            </span>
+            <span className="text-xs font-medium text-white/60 tracking-wide">
+              AI-powered lecture compression
+            </span>
+          </motion.div>
+
+          {/* Headline */}
           <motion.h1
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="text-6xl md:text-6xl  mb-6 tracking-tighter leading-[0.9]"
+            transition={{ duration: 1, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            className="text-5xl md:text-6xl font-medium mb-6 tracking-tight leading-[1.0]"
           >
-            Condense Long Lectures <br />
-            <i>into Crisp, High-Value Learning</i>
+            Condense Long Lectures
+            <br />
+            <span className="bg-gradient-to-r from-[#7DD3FC] via-[#0EA5E9] to-[#06B6D4] bg-clip-text text-transparent">
+              into crisp learning
+            </span>
           </motion.h1>
 
+          {/* Sub */}
           <motion.p
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="text-xl  text-stone-300/80 mb-12 max-w-3xl mx-auto font-light"
+            transition={{ duration: 1, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="text-lg text-white/40 mb-12 max-w-2xl mx-auto font-light leading-relaxed"
           >
-            Turn 50+ minute lectures into 15–20 minutes
-            <br />
-            by removing pauses, filler, and repetition without losing key
-            concepts.
+             removes pauses, filler,
+            and repetition — without losing key concepts.
           </motion.p>
 
-          <div className="w-full  flex justify-center items-center ">
-            <form className="flex max-w-xl w-full items-center border rounded-full overflow-hidden  shadow-[inset_2px_2px_6px_rgba(59,130,246,0.6)]">
-              <input
-                className="flex-1 px-6  outline-none"
-                type="text"
-                placeholder="paste your youtube link here"
-              />
-
-              <motion.button
-                type="submit"
-                whileHover={{
-                  boxShadow: "0 0 20px rgba(14, 165, 233, 0.6)",
-                }}
-                className="h-full cursor-pointer py-3 bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] text-xl text-white px-8 font-bold"
-              >
-                <h1>condense</h1>
-              </motion.button>
-            </form>
-          </div>
-
-          {/* Floating Elements */}
-          {/* <motion.div
-            animate={{ y: [0, -20, 0], rotate: [0, 5, 0] }}
-            transition={{ duration: 5, repeat: Infinity }}
-            className="absolute top-20 left-10 w-20 h-20 border-4 border-cyan-400/30 rounded-lg backdrop-blur-sm bg-white/5"
-          />
+          {/* Input */}
           <motion.div
-            animate={{ y: [0, 20, 0], rotate: [0, -5, 0] }}
-            transition={{ duration: 6, repeat: Infinity }}
-            className="absolute bottom-20 right-10 w-32 h-32 border-4 border-sky-400/20 rounded-full backdrop-blur-sm bg-white/5"
-          /> */}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.65 }}
+            className="flex justify-center "
+          >
+            <div
+              className={`relative flex items-center  w-full max-w-2xl rounded-2xl transition-all duration-300 ${
+                inputFocused
+                  ? "shadow-[0_0_0_1px_rgba(14,165,233,0.5),0_0_40px_rgba(14,165,233,0.12)]"
+                  : "shadow-[0_0_0_1px_rgba(255,255,255,0.08)]"
+              } bg-white/[0.04] backdrop-blur-xl`}
+            >
+              {/* YouTube icon */}
+              <div className="pl-5 pr-3 shrink-0">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-white/25">
+                  <path d="M22.54 6.42a2.78 2.78 0 00-1.94-1.96C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 1.96A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.4 19.54C5.12 20 12 20 12 20s6.88 0 8.6-.46a2.78 2.78 0 001.94-1.96A29 29 0 0023 12a29 29 0 00-.46-5.58z" stroke="currentColor" strokeWidth="1.5"/>
+                  <polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <input
+                className="flex-1  py-4 pr-4 text-sm text-white placeholder-white/25 outline-none"
+                type="text"
+                placeholder="Paste your YouTube lecture link here…"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onFocus={() => setInputFocused(true)}
+                onBlur={() => setInputFocused(false)}
+              />
+              <div className="pr-2 shrink-0">
+                <motion.button
+                  type="button"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="relative overflow-hidden flex items-center gap-2 bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] text-white text-sm font-semibold px-6 py-2.5 rounded-xl cursor-pointer"
+                >
+                  <span className="relative z-10">Condense</span>
+                  <svg className="relative z-10" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  {/* shimmer */}
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                    animate={{ x: ["-100%", "100%"] }}
+                    transition={{ repeat: Infinity, duration: 2.5, ease: "linear", repeatDelay: 1 }}
+                  />
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Social proof */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.9 }}
+            className="mt-8 flex items-center justify-center gap-6 text-white/30 text-xs"
+          >
+            <div className="flex items-center gap-2">
+              <div className="flex -space-x-2">
+                {["C","D","A","N","U"].map((l, i) => (
+                  <div key={i} className="w-6 h-6 rounded-full bg-gradient-to-br from-[#0EA5E9] to-[#06B6D4] flex items-center justify-center text-[9px] font-bold border border-[#080808]">
+                    {l}
+                  </div>
+                ))}
+              </div>
+              <span>5,000+ lectures condensed</span>
+            </div>
+            <span className="w-px h-3 bg-white/10" />
+            <div className="flex items-center gap-1.5">
+              {[1,2,3,4,5].map(i => (
+                <svg key={i} width="10" height="10" viewBox="0 0 24 24" fill="#0EA5E9">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+              ))}
+              <span>Loved by students</span>
+            </div>
+          </motion.div>
+
+          {/* Floating deco elements — refined */}
+          <motion.div
+            animate={{ y: [0, -14, 0] }}
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-24 left-4 w-14 h-14 border border-white/[0.06] rounded-2xl backdrop-blur-sm bg-white/[0.02] flex items-center justify-center"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(14,165,233,0.4)" strokeWidth="1.5">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </motion.div>
+          <motion.div
+            animate={{ y: [0, 14, 0] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            className="absolute bottom-24 right-4 w-16 h-16 border border-white/[0.06] rounded-full backdrop-blur-sm bg-white/[0.02] flex items-center justify-center"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(6,182,212,0.4)" strokeWidth="1.5">
+              <path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </motion.div>
         </div>
+
+        {/* Bottom fade */}
+        <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-[#080808] to-transparent pointer-events-none" />
       </motion.section>
 
-      {/* How It Works */}
-      {/* <section className="py-32 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-500/5 to-transparent" />
-        
-        <div className="max-w-6xl mx-auto px-6 relative z-10">
-          <SectionTitle>
-            How it <span className="bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] bg-clip-text text-transparent">works</span>
-          </SectionTitle>
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.3 }}
-            className="text-2xl text-cyan-100/70 mb-20 font-light"
-          >
-            in 3 simple steps
-          </motion.p>
+<hr className="w-full border-white/[0.08]" />
+      {/* ══════════════════════════════════════════════════════
+          STATS STRIP
+      ══════════════════════════════════════════════════════ */}
+      {/* <section className="w-full max-w-5xl mx-auto px-6 py-16 relative z-10">
+        <Divider />
+        <div className="py-12 grid grid-cols-3 gap-8">
+          {stats.map((s, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1, duration: 0.6 }}
+              className="text-center"
+            >
+              <div className="text-4xl md:text-5xl font-black bg-gradient-to-r from-[#7DD3FC] to-[#06B6D4] bg-clip-text text-transparent mb-1">
+                <CountUp end={s.value} suffix={s.suffix} />
+              </div>
+              <div className="text-white/35 text-sm font-light">{s.label}</div>
+            </motion.div>
+          ))}
+        </div>
+        <Divider />
+      </section> */}
 
-          <div className="grid md:grid-cols-3 gap-12">
+      {/* ══════════════════════════════════════════════════════
+          HOW IT WORKS
+      ══════════════════════════════════════════════════════ */}
+      <section className="py-28 w-full relative z-10">
+        <div className="max-w-4xl mx-auto px-6">
+          <SectionTag>Process</SectionTag>
+          <SectionTitle>
+            How it{" "}
+            <span className="bg-gradient-to-r from-[#7DD3FC] to-[#06B6D4] bg-clip-text text-transparent">
+              works
+            </span>
+          </SectionTitle>
+          <p className="text-white/35 text-base mb-16 font-light">Three steps. Seconds to start.</p>
+
+          <div className="grid md:grid-cols-3 gap-6">
             {[
               {
-                step: '01',
-                title: 'Paste Your Lecture Link',
-                description: 'Upload a video or paste a lecture link. Condenser AI instantly starts processing it for you.',
+                step: "01",
+                title: "Paste Your Link",
+                description: "Upload a video or paste a lecture link. Condenser AI instantly starts processing it for you.",
               },
               {
-                step: '02',
-                title: 'AI Detects What to Remove',
-                description: 'Our AI finds pauses, filler words, and repeated explanations. Then it cuts only the unnecessary parts without breaking flow.',
+                step: "02",
+                title: "AI Detects & Removes",
+                description: "Our AI finds pauses, filler words, and repeated explanations — cutting only the unnecessary parts without breaking flow.",
               },
               {
-                step: '03',
-                title: 'Get Your Condensed Lecture',
-                description: 'Watch a shorter, cleaner lecture with all key concepts intact. Save time, revise faster, and stay consistent every day.',
+                step: "03",
+                title: "Watch & Learn Faster",
+                description: "Get a shorter, cleaner lecture with all key concepts intact. Save time, revise faster, stay consistent.",
               },
             ].map((item, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 50 }}
+                initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.8, delay: i * 0.2, ease: [0.22, 1, 0.36, 1] }}
-                whileHover={{ y: -10 }}
-                className="relative group"
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.7, delay: i * 0.15, ease: [0.22, 1, 0.36, 1] }}
+                className="group relative"
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-cyan-400/10 via-blue-500/5 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="relative bg-white/10 backdrop-blur-xl border border-cyan-400/20 p-8 rounded-3xl hover:border-cyan-400/50 hover:shadow-xl hover:shadow-cyan-500/20 transition-all duration-500">
-                  <div className="text-7xl font-black bg-gradient-to-br from-cyan-400/30 to-blue-500/30 bg-clip-text text-transparent mb-4">{item.step}</div>
-                  <h3 className="text-2xl font-bold mb-4">{item.title}</h3>
-                  <p className="text-cyan-100/70 leading-relaxed">{item.description}</p>
+                {/* connector line */}
+                {i < 2 && (
+                  <div className="hidden md:block absolute top-8 left-[calc(100%+1px)] w-6 h-px bg-gradient-to-r from-white/10 to-transparent z-10" />
+                )}
+                <div className="relative bg-white/[0.03] border border-white/[0.07] rounded-2xl p-8 hover:border-[#0EA5E9]/30 hover:bg-white/[0.05] transition-all duration-500">
+                  {/* step number */}
+                  <div className="flex items-start justify-between mb-6">
+                    <span className="text-xs font-mono font-semibold text-[#0EA5E9]/60 tracking-widest">{item.step}</span>
+                    <div className="w-8 h-8 rounded-lg bg-[#0EA5E9]/10 flex items-center justify-center group-hover:bg-[#0EA5E9]/20 transition-colors">
+                      <div className="w-2 h-2 rounded-full bg-[#0EA5E9]/60 group-hover:bg-[#0EA5E9] transition-colors" />
+                    </div>
+                  </div>
+                  <h3 className="text-lg font-bold mb-3 text-white/90">{item.title}</h3>
+                  <p className="text-white/40 text-sm leading-relaxed">{item.description}</p>
                 </div>
               </motion.div>
             ))}
           </div>
         </div>
-      </section> */}
-
-      {/* Features */}
-      {/* <section id="features" className="py-32 relative">
-        <div className="max-w-6xl mx-auto px-6">
+      </section>
+<hr className="w-full border-white/[0.08]" />
+      {/* ══════════════════════════════════════════════════════
+          FEATURES
+      ══════════════════════════════════════════════════════ */}
+      <section id="features" className="py-28 w-full relative z-10">
+        <div className="max-w-4xl mx-auto px-6">
+          <SectionTag>Features</SectionTag>
           <SectionTitle>
-            AI Powered <span className="bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] bg-clip-text text-transparent">Features</span>
+            AI-powered{" "}
+            <span className="bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] bg-clip-text text-transparent">
+              capabilities
+            </span>
           </SectionTitle>
+          <p className="text-white/35 text-base mb-16 font-light">Everything you need to study smarter.</p>
 
-          <div className="space-y-8 mt-20">
+          <div className="space-y-4">
             {features.map((feature, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, x: i % 2 === 0 ? -100 : 100 }}
+                initial={{ opacity: 0, x: -30 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.8, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                whileHover={{ scale: 1.02 }}
-                className="relative group"
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.7, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                className="group"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/20 via-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl blur-xl" />
-                <div className="relative bg-white/10 backdrop-blur-xl border border-cyan-400/20 p-12 rounded-3xl hover:border-cyan-400/50 hover:shadow-xl hover:shadow-cyan-500/20 transition-all duration-500">
-                  <div className="flex items-start gap-6">
-                    <motion.div
-                      whileHover={{ rotate: 360, scale: 1.2 }}
-                      transition={{ duration: 0.6 }}
-                      className="text-6xl"
-                    >
+                <div className="relative bg-white/[0.03] border border-white/[0.07] rounded-2xl p-8 md:p-10 hover:border-[#0EA5E9]/25 hover:bg-white/[0.05] transition-all duration-500 overflow-hidden">
+                  {/* hover glow */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#0EA5E9]/0 to-[#06B6D4]/0 group-hover:from-[#0EA5E9]/[0.03] group-hover:to-[#06B6D4]/[0.03] transition-all duration-700" />
+
+                  <div className="relative flex items-start gap-8">
+                    {/* icon box */}
+                    <div className="shrink-0 w-14 h-14 rounded-2xl bg-gradient-to-br from-[#0EA5E9]/10 to-[#06B6D4]/10 border border-[#0EA5E9]/15 flex items-center justify-center text-[#0EA5E9] group-hover:border-[#0EA5E9]/30 transition-colors">
                       {feature.icon}
-                    </motion.div>
+                    </div>
+
                     <div className="flex-1">
-                      <h3 className="text-3xl font-black mb-2">{feature.title}</h3>
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="text-xs font-semibold text-[#0EA5E9]/60 tracking-widest uppercase">{feature.tag}</span>
+                      </div>
+                      <h3 className="text-xl md:text-2xl font-bold mb-1 text-white/90">{feature.title}</h3>
                       {feature.subtitle && (
-                        <h4 className="text-xl bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] bg-clip-text text-transparent font-bold mb-4">{feature.subtitle}</h4>
+                        <p className="text-sm font-medium text-[#0EA5E9]/70 mb-3">{feature.subtitle}</p>
                       )}
-                      <p className="text-cyan-100/70 text-lg leading-relaxed">{feature.description}</p>
+                      <p className="text-white/40 text-sm leading-relaxed max-w-2xl">{feature.description}</p>
+                    </div>
+
+                    {/* arrow micro */}
+                    <div className="shrink-0 hidden md:flex w-8 h-8 rounded-full border border-white/[0.06] items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(14,165,233,0.6)" strokeWidth="2">
+                        <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
                     </div>
                   </div>
                 </div>
@@ -271,290 +454,317 @@ export default function CondenserLanding() {
             ))}
           </div>
         </div>
-      </section> */}
-
-      {/* Gallery */}
-      {/* <section id="gallery" className="py-32 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-500/5 to-transparent" />
-        
-        <div className="max-w-6xl mx-auto px-6 relative z-10">
+      </section>
+<hr className="w-full border-white/[0.08]" />
+      {/* ══════════════════════════════════════════════════════
+          PRICING
+      ══════════════════════════════════════════════════════ */}
+      <section id="pricing" className="py-28 w-full relative z-10">
+        <div className="max-w-4xl mx-auto px-6">
+          <SectionTag>Pricing</SectionTag>
           <SectionTitle>
-            Discover <span className="bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] bg-clip-text text-transparent">More</span>
+            Plans that{" "}
+            <span className="bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] bg-clip-text text-transparent">
+              suit you
+            </span>
           </SectionTitle>
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.3 }}
-            className="text-xl text-cyan-100/70 mb-20 font-light"
-          >
-            Not sure where to start? Explore a gallery full of stunning AI generated content from other users.
-          </motion.p>
+          <p className="text-white/35 text-base mb-16 font-light">Start free. Scale when you're ready.</p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {galleryVideos.map((video, i) => (
-              <motion.div
-                key={video.id}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: i * 0.1 }}
-                whileHover={{ y: -10, scale: 1.03 }}
-                className="relative group cursor-pointer"
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-cyan-400/30 to-blue-500/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl blur-xl" />
-                <div className="relative bg-white/10 backdrop-blur-xl border border-cyan-400/30 rounded-2xl overflow-hidden hover:border-cyan-400/60 hover:shadow-xl hover:shadow-cyan-500/30 transition-all duration-500">
-                  <div className="aspect-video bg-gradient-to-br from-[#003d66] to-[#002b4d] flex items-center justify-center relative">
-                    <motion.div
-                      whileHover={{ scale: 1.2 }}
-                      className="w-16 h-16 bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] rounded-full flex items-center justify-center shadow-lg shadow-cyan-500/50"
-                    >
-                      <div className="w-0 h-0 border-l-[12px] border-l-white border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent ml-1" />
-                    </motion.div>
-                    <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold border border-cyan-400/20">
-                      {video.duration}
-                    </div>
-                  </div>
-                  <div className="p-4 bg-white/5 backdrop-blur-sm">
-                    <h4 className="font-bold mb-2">{video.title}</h4>
-                    <p className="text-sm text-cyan-100/60">{video.views} views</p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section> */}
-
-      {/* Pricing */}
-      {/* <section id="pricing" className="py-32 relative">
-        <div className="max-w-6xl mx-auto px-6">
-          <SectionTitle>
-            Plans That <span className="bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] bg-clip-text text-transparent">Suit You</span>
-          </SectionTitle>
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.3 }}
-            className="text-2xl text-cyan-100/70 mb-20 font-light"
-          >
-            Pricing
-          </motion.p>
-
-          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-5">
             {[
               {
-                name: 'Basic',
-                price: 'Free',
-                description: 'Perfect for students who want quick study help.',
+                name: "Basic",
+                price: "Free",
+                priceNote: "forever",
+                description: "Perfect for students who want quick study help.",
                 features: [
-                  'Generate AI Notes from any topic',
-                  'Get AI Chapters (auto structured)',
-                  'Limited daily usage (fair use)',
+                  "Generate AI Notes from any topic",
+                  "Get AI Chapters (auto structured)",
+                  "Limited daily usage (fair use)",
                 ],
-                cta: 'Get Started',
-                link: '/signup',
+                cta: "Get Started",
+                link: "/signup",
+                featured: false,
               },
               {
-                name: 'Pro',
-                price: '₹199/month',
-                description: 'For serious learners who want faster + unlimited studying',
+                name: "Pro",
+                price: "₹199",
+                priceNote: "per month",
+                description: "For serious learners who want unlimited studying.",
                 features: [
-                  'Unlimited AI Notes + AI Chapters',
-                  'Faster processing + priority access',
-                  'Export notes (PDF / copy format)',
+                  "Unlimited AI Notes + AI Chapters",
+                  "Faster processing + priority access",
+                  "Export notes (PDF / copy format)",
                 ],
-                cta: 'Get Started',
-                link: '/pricing',
+                cta: "Get Pro",
+                link: "/pricing",
                 featured: true,
               },
             ].map((plan, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 50 }}
+                initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: i * 0.2 }}
-                whileHover={{ y: -15, scale: 1.02 }}
-                className="relative group"
+                transition={{ duration: 0.7, delay: i * 0.15 }}
+                className="relative"
               >
-                {plan.featured && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg shadow-cyan-500/50">
-                    POPULAR
-                  </div>
-                )}
-                <div
-                  className={`relative h-full bg-white/10 backdrop-blur-xl border ${
-                    plan.featured ? 'border-cyan-400/50 shadow-xl shadow-cyan-500/20' : 'border-cyan-400/20'
-                  } p-10 rounded-3xl hover:border-cyan-400/60 hover:shadow-xl hover:shadow-cyan-500/30 transition-all duration-500`}
-                >
-                  <h3 className="text-3xl font-black mb-2">{plan.name}</h3>
-                  <p className="text-cyan-100/70 mb-6">{plan.description}</p>
-                  <div className="text-5xl font-black mb-8 bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] bg-clip-text text-transparent">{plan.price}</div>
-                  
-                  <div className="space-y-4 mb-10">
-                    <div className="font-bold text-sm text-cyan-100/60 mb-4">Features:</div>
-                    {plan.features.map((feature, fi) => (
-                      <motion.div
-                        key={fi}
-                        initial={{ opacity: 0, x: -20 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: i * 0.2 + fi * 0.1 }}
-                        className="flex items-start gap-3"
-                      >
-                        <div className="w-5 h-5 bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
-                          <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                          </svg>
-                        </div>
-                        <span className="text-cyan-100/80">{feature}</span>
-                      </motion.div>
-                    ))}
-                  </div>
-
-                  <motion.a
-                    href={plan.link}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={`block text-center py-4 rounded-full font-bold transition-all ${
+                <GlowBorder featured={plan.featured}>
+                  <div
+                    className={`relative h-full rounded-3xl p-8 overflow-hidden ${
                       plan.featured
-                        ? 'bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] text-white hover:shadow-lg hover:shadow-cyan-500/50'
-                        : 'bg-white/10 text-white hover:bg-white/20 border border-cyan-400/30'
+                        ? "bg-[#0A1628] border border-[#0EA5E9]/20"
+                        : "bg-white/[0.03] border border-white/[0.07]"
                     }`}
                   >
-                    {plan.cta}
-                  </motion.a>
-                </div>
+                    {plan.featured && (
+                      <>
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[200px] h-[1px] bg-gradient-to-r from-transparent via-[#0EA5E9]/60 to-transparent" />
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80px] h-[40px] bg-[#0EA5E9]/10 blur-xl" />
+                      </>
+                    )}
+
+                    {plan.featured && (
+                      <div className="absolute top-4 right-4 bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] text-white text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full">
+                        Popular
+                      </div>
+                    )}
+
+                    <h3 className="text-base font-semibold text-white/60 mb-6">{plan.name}</h3>
+
+                    <div className="mb-1 flex items-end gap-2">
+                      <span className={`text-5xl font-black ${plan.featured ? "bg-gradient-to-r from-[#7DD3FC] to-[#06B6D4] bg-clip-text text-transparent" : "text-white"}`}>
+                        {plan.price}
+                      </span>
+                    </div>
+                    <p className="text-white/30 text-xs mb-4">{plan.priceNote}</p>
+                    <p className="text-white/45 text-sm mb-8 leading-relaxed">{plan.description}</p>
+
+                    <div className="h-px w-full bg-white/[0.06] mb-8" />
+
+                    <div className="space-y-4 mb-10">
+                      {plan.features.map((feature, fi) => (
+                        <motion.div
+                          key={fi}
+                          initial={{ opacity: 0, x: -10 }}
+                          whileInView={{ opacity: 1, x: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: i * 0.15 + fi * 0.08 }}
+                          className="flex items-center gap-3"
+                        >
+                          <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${plan.featured ? "bg-[#0EA5E9]/20" : "bg-white/[0.06]"}`}>
+                            <svg width="8" height="8" viewBox="0 0 12 12" fill="none">
+                              <path d="M2 6l3 3 5-5" stroke={plan.featured ? "#0EA5E9" : "rgba(255,255,255,0.4)"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </div>
+                          <span className="text-white/55 text-sm">{feature}</span>
+                        </motion.div>
+                      ))}
+                    </div>
+
+                    <motion.a
+                      href={plan.link}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.97 }}
+                      className={`relative overflow-hidden block text-center py-3.5 rounded-xl text-sm font-semibold transition-all ${
+                        plan.featured
+                          ? "bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] text-white"
+                          : "bg-white/[0.06] text-white/70 hover:bg-white/[0.1] border border-white/[0.08]"
+                      }`}
+                    >
+                      {plan.featured && (
+                        <motion.div
+                          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent"
+                          animate={{ x: ["-100%", "100%"] }}
+                          transition={{ repeat: Infinity, duration: 2.5, ease: "linear", repeatDelay: 2 }}
+                        />
+                      )}
+                      <span className="relative z-10">{plan.cta}</span>
+                    </motion.a>
+                  </div>
+                </GlowBorder>
               </motion.div>
             ))}
           </div>
         </div>
-      </section> */}
-
-      {/* Reviews */}
-      {/* <section className="py-32 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-500/5 to-transparent" />
-        
-        <div className="max-w-4xl mx-auto px-6 relative z-10">
+      </section>
+<hr className="w-full border-white/[0.08]" />
+      {/* ══════════════════════════════════════════════════════
+          REVIEWS
+      ══════════════════════════════════════════════════════ */}
+      <section className="py-28 w-full relative z-10 overflow-hidden">
+        <div className="max-w-4xl mx-auto px-6">
+          <SectionTag>Testimonials</SectionTag>
           <SectionTitle>
-            What people <span className="bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] bg-clip-text text-transparent">think</span>
+            What people{" "}
+            <span className="bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] bg-clip-text text-transparent">
+              think
+            </span>
           </SectionTitle>
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.3 }}
-            className="text-2xl text-cyan-100/70 mb-20 font-light"
-          >
-            Reviews
-          </motion.p>
+          <p className="text-white/35 text-base mb-16 font-light">From students who've reclaimed their time.</p>
 
           <div className="relative">
-            <motion.div
-              key={currentReview}
-              initial={{ opacity: 0, x: 100 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -100 }}
-              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              className="bg-white/10 backdrop-blur-xl border border-cyan-400/30 p-12 rounded-3xl shadow-xl shadow-cyan-500/10"
-            >
-              <div className="text-6xl bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] bg-clip-text text-transparent mb-6">"</div>
-              <p className="text-2xl font-light mb-8 leading-relaxed">{reviews[currentReview].text}</p>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] rounded-full flex items-center justify-center font-black text-xl shadow-lg shadow-cyan-500/50">
-                  {reviews[currentReview].name[0]}
-                </div>
-                <div>
-                  <div className="font-bold">{reviews[currentReview].name}</div>
-                  <div className="text-sm text-cyan-100/60">{reviews[currentReview].role}</div>
-                </div>
-              </div>
-            </motion.div>
-
-            <div className="flex items-center justify-center gap-4 mt-8">
-              <motion.button
-                onClick={prevReview}
-                whileHover={{ scale: 1.1, backgroundColor: 'rgba(14, 165, 233, 0.2)' }}
-                whileTap={{ scale: 0.9 }}
-                className="w-12 h-12 bg-white/10 backdrop-blur-md border border-cyan-400/30 rounded-full flex items-center justify-center hover:border-cyan-400/60 hover:shadow-lg hover:shadow-cyan-500/30 transition-all"
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentReview}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                className="bg-white/[0.03] border border-white/[0.07] rounded-2xl p-10 md:p-14"
               >
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                {/* quote mark */}
+                <svg width="32" height="24" viewBox="0 0 32 24" fill="none" className="mb-8 opacity-30">
+                  <path d="M0 24V14.4C0 6.08 4.48 1.28 13.44 0l1.44 2.4C10.24 3.52 7.68 6.08 7.04 10.56H13.44V24H0ZM18.56 24V14.4C18.56 6.08 23.04 1.28 32 0l1.44 2.4C28.8 3.52 26.24 6.08 25.6 10.56H32V24H18.56Z" fill="#0EA5E9"/>
                 </svg>
-              </motion.button>
+                <p className="text-xl md:text-2xl text-white/80 font-light leading-relaxed mb-10">
+                  {reviews[currentReview].text}
+                </p>
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#0EA5E9] to-[#06B6D4] flex items-center justify-center font-bold text-sm">
+                    {reviews[currentReview].name[0]}
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold text-white/80">{reviews[currentReview].name}</div>
+                    <div className="text-xs text-white/35">{reviews[currentReview].role}</div>
+                  </div>
+                  {/* stars */}
+                  <div className="ml-auto flex gap-1">
+                    {[1,2,3,4,5].map(i => (
+                      <svg key={i} width="12" height="12" viewBox="0 0 24 24" fill="#0EA5E9" opacity="0.7">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                      </svg>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
 
+            <div className="flex items-center justify-between mt-8">
+              {/* dots */}
               <div className="flex gap-2">
                 {reviews.map((_, i) => (
-                  <motion.button
+                  <button
                     key={i}
                     onClick={() => setCurrentReview(i)}
-                    whileHover={{ scale: 1.2 }}
-                    className={`w-2 h-2 rounded-full transition-all ${
-                      i === currentReview ? 'bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] w-8 shadow-lg shadow-cyan-500/50' : 'bg-white/20'
+                    className={`h-1 rounded-full transition-all duration-300 ${
+                      i === currentReview ? "w-8 bg-[#0EA5E9]" : "w-2 bg-white/15"
                     }`}
                   />
                 ))}
               </div>
 
-              <motion.button
-                onClick={nextReview}
-                whileHover={{ scale: 1.1, backgroundColor: 'rgba(14, 165, 233, 0.2)' }}
-                whileTap={{ scale: 0.9 }}
-                className="w-12 h-12 bg-white/10 backdrop-blur-md border border-cyan-400/30 rounded-full flex items-center justify-center hover:border-cyan-400/60 hover:shadow-lg hover:shadow-cyan-500/30 transition-all"
-              >
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </motion.button>
+              {/* nav */}
+              <div className="flex gap-3">
+                {[
+                  { fn: () => setCurrentReview(p => (p - 1 + reviews.length) % reviews.length), dir: "left" },
+                  { fn: () => setCurrentReview(p => (p + 1) % reviews.length), dir: "right" },
+                ].map(({ fn, dir }) => (
+                  <motion.button
+                    key={dir}
+                    onClick={fn}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="w-10 h-10 bg-white/[0.04] border border-white/[0.08] rounded-xl flex items-center justify-center hover:border-[#0EA5E9]/30 hover:bg-[#0EA5E9]/10 transition-all"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2">
+                      {dir === "left"
+                        ? <path d="M15 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round"/>
+                        : <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round"/>}
+                    </svg>
+                  </motion.button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
-      </section> */}
+      </section>
+<hr className="w-full border-white/[0.08]" />
+      {/* ══════════════════════════════════════════════════════
+          CTA
+      ══════════════════════════════════════════════════════ */}
+      <section className="py-28 w-full relative z-10">
+        <div className="max-w-4xl mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="relative rounded-3xl overflow-hidden border border-[#0EA5E9]/15 bg-[#0A1628] p-14 md:p-20 text-center"
+          >
+            {/* glow */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[2px] bg-gradient-to-r from-transparent via-[#0EA5E9]/50 to-transparent" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[200px] h-[60px] bg-[#0EA5E9]/10 blur-2xl" />
 
-      {/* Footer */}
-      <footer className="border-t border-cyan-400/20 py-12 bg-white/5 backdrop-blur-xl">
-        <div className="max-w-6xl mx-auto px-6">
+            <p className="text-xs font-semibold tracking-[0.2em] uppercase text-[#0EA5E9]/60 mb-6">Start Today</p>
+            <h2 className="text-4xl md:text-5xl font-black mb-4 leading-tight">
+              Stop wasting time.<br />
+              <span className="bg-gradient-to-r from-[#7DD3FC] to-[#06B6D4] bg-clip-text text-transparent">
+                Start learning faster.
+              </span>
+            </h2>
+            <p className="text-white/35 text-base mb-10 max-w-xl mx-auto font-light">
+              Join thousands of students who've reclaimed hours every week with Condenser AI.
+            </p>
+            <motion.a
+              href="/signup"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              className="relative overflow-hidden inline-flex items-center gap-2 bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] text-white font-semibold px-8 py-4 rounded-xl text-sm"
+            >
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                animate={{ x: ["-100%", "100%"] }}
+                transition={{ repeat: Infinity, duration: 2.5, ease: "linear", repeatDelay: 1.5 }}
+              />
+              <span className="relative z-10">Get started for free</span>
+              <svg className="relative z-10" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </motion.a>
+          </motion.div>
+        </div>
+      </section>
+<hr className="w-full border-white/[0.08]" />
+      {/* ══════════════════════════════════════════════════════
+          FOOTER
+      ══════════════════════════════════════════════════════ */}
+      <footer className="w-full border-t border-white/[0.06] py-16 relative z-10">
+        <div className="max-w-5xl mx-auto px-6">
           <div className="grid md:grid-cols-3 gap-12 mb-12">
             <div>
-              <div className="text-2xl font-black mb-4">
+              <div className="text-lg font-black mb-3">
                 Condenser{" "}
                 <span className="bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] bg-clip-text text-transparent">
                   AI
                 </span>
               </div>
-              <p className="text-cyan-100/60 text-sm">
-                Turn 50+ minute lectures into crisp, high-value learning
-                sessions.
+              <p className="text-white/30 text-sm leading-relaxed max-w-[220px]">
+                Turn 50+ minute lectures into crisp, high-value learning sessions.
               </p>
             </div>
-
             <div>
-              <h4 className="font-bold mb-4">Quick Links</h4>
-              <div className="space-y-2">
-                {["Home", "Features", "Gallery", "Pricing", "Contact Us"].map(
-                  (link) => (
-                    <a
-                      key={link}
-                      href={`/${link.toLowerCase().replace(" ", "-")}`}
-                      className="block text-cyan-100/60 hover:text-[#0EA5E9] transition-colors text-sm"
-                    >
-                      {link}
-                    </a>
-                  ),
-                )}
-              </div>
-            </div>
-
-            <div>
-              <h4 className="font-bold mb-4">Legal</h4>
-              <div className="space-y-2">
-                {["Privacy Policy", "Terms of Service"].map((link) => (
+              <h4 className="text-xs font-semibold text-white/40 tracking-widest uppercase mb-5">Navigation</h4>
+              <div className="space-y-3">
+                {["Home", "Features", "Pricing", "Contact Us"].map((link) => (
                   <a
                     key={link}
                     href={`/${link.toLowerCase().replace(" ", "-")}`}
-                    className="block text-cyan-100/60 hover:text-[#0EA5E9] transition-colors text-sm"
+                    className="block text-white/35 hover:text-[#0EA5E9] transition-colors text-sm"
+                  >
+                    {link}
+                  </a>
+                ))}
+              </div>
+            </div>
+            <div>
+              <h4 className="text-xs font-semibold text-white/40 tracking-widest uppercase mb-5">Legal</h4>
+              <div className="space-y-3">
+                {["Privacy Policy", "Terms of Service"].map((link) => (
+                  <a
+                    key={link}
+                    href={`/${link.toLowerCase().replace(/\s+/g, "-")}`}
+                    className="block text-white/35 hover:text-[#0EA5E9] transition-colors text-sm"
                   >
                     {link}
                   </a>
@@ -562,9 +772,12 @@ export default function CondenserLanding() {
               </div>
             </div>
           </div>
-
-          <div className="border-t border-cyan-400/20 pt-8 text-center text-cyan-100/60 text-sm">
-            © 2026 Condenser AI
+          <div className="border-t border-white/[0.05] pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <span className="text-white/20 text-xs">© 2026 Condenser AI. All rights reserved.</span>
+            <div className="flex items-center gap-1.5 text-white/15 text-xs">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500/60 inline-block" />
+              All systems operational
+            </div>
           </div>
         </div>
       </footer>
