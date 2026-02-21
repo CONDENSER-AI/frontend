@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { motion, useScroll, useTransform, useInView } from 'framer-motion';
-import { useState, useRef } from 'react';
-import Navbar from './ui/Navbar';
+import { motion, useScroll, useTransform, useInView } from "framer-motion";
+import { useState, useRef } from "react";
+import Navbar from "./ui/Navbar";
 
 export default function CondenserLanding() {
   const [currentReview, setCurrentReview] = useState(0);
@@ -11,8 +11,6 @@ export default function CondenserLanding() {
   const { scrollYProgress } = useScroll();
   const heroOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
   const heroScale = useTransform(scrollYProgress, [0, 0.3], [1, 0.95]);
-
-
 
   const reviews = [
     {
@@ -52,17 +50,20 @@ export default function CondenserLanding() {
       icon: "⚡",
       title: "Condense Long Lectures",
       subtitle: "Into Crisp, High-Value Learning",
-      description: "Turn 50+ minute lectures into 15–20 minutes by removing pauses, filler, and repetition without losing key concepts.",
+      description:
+        "Turn 50+ minute lectures into 15–20 minutes by removing pauses, filler, and repetition without losing key concepts.",
     },
     {
       icon: "📝",
       title: "AI Notes",
-      description: "Get crisp, structured notes from every lecture in seconds — perfect for revision, exams, and quick understanding.",
+      description:
+        "Get crisp, structured notes from every lecture in seconds — perfect for revision, exams, and quick understanding.",
     },
     {
       icon: "📚",
       title: "AI Chapters",
-      description: "Auto split long lectures into clear topic wise chapters with timestamps.",
+      description:
+        "Auto split long lectures into clear topic wise chapters with timestamps.",
     },
   ];
 
@@ -86,7 +87,7 @@ export default function CondenserLanding() {
   const SectionTitle = ({ children, delay = 0 }) => {
     const ref = useRef(null);
     const isInView = useInView(ref, { once: true, margin: "-100px" });
-    
+
     return (
       <motion.h2
         ref={ref}
@@ -103,11 +104,11 @@ export default function CondenserLanding() {
   return (
     <div className="flex flex-col justify-center items-center bg-gradient-to-br from-[#171717] via-[#000000] to-[#040404] text-white min-h-screen overflow-x-hidden">
       {/* Navigation */}
-    <Navbar />
+      <Navbar />
 
-<span className='w-[60%] h-[20%] absolute top-0 bg-blue-500 blur-[100px]'></span>
+      <span className="w-[60%] h-[20%] absolute top-0 bg-blue-500 blur-[100px]"></span>
 
-<span className='w-[40%] h-[20%] absolute top-0 bg-blue-200 blur-[100px]'></span>
+      <span className="w-[40%] h-[20%] absolute top-0 bg-blue-200 blur-[100px]"></span>
       {/* Hero Section */}
       <motion.section
         id="home"
@@ -115,18 +116,15 @@ export default function CondenserLanding() {
         style={{ opacity: heroOpacity, scale: heroScale }}
         className="min-h-screen flex items-center justify-center relative overflow-hidden pt-20"
       >
-        
         <div className="max-w-6xl mx-auto px-6 text-center relative z-10">
-        
-
           <motion.h1
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
             className="text-6xl md:text-6xl  mb-6 tracking-tighter leading-[0.9]"
           >
-           Condense Long Lectures  <br /><i>into Crisp, High-Value Learning</i>
-        
+            Condense Long Lectures <br />
+            <i>into Crisp, High-Value Learning</i>
           </motion.h1>
 
           <motion.p
@@ -135,22 +133,31 @@ export default function CondenserLanding() {
             transition={{ duration: 1, delay: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="text-xl  text-stone-300/80 mb-12 max-w-3xl mx-auto font-light"
           >
-           Turn 50+ minute lectures into 15–20 minutes 
+            Turn 50+ minute lectures into 15–20 minutes
             <br />
-            by removing pauses, filler, and repetition without losing key concepts.
+            by removing pauses, filler, and repetition without losing key
+            concepts.
           </motion.p>
 
-          <motion.a
-            href="/signup"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.9, ease: [0.22, 1, 0.36, 1] }}
-            whileHover={{ scale: 1.05, boxShadow: '0 0 40px rgba(14, 165, 233, 0.6)' }}
-            whileTap={{ scale: 0.95 }}
-            className="inline-block bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] text-white px-12 py-5 rounded-full font-black text-lg hover:from-[#06B6D4] hover:to-[#0EA5E9] transition-all shadow-2xl shadow-cyan-500/30"
-          >
-            Click here to start
-          </motion.a>
+          <div className="w-full  flex justify-center items-center ">
+            <form className="flex max-w-xl w-full items-center border rounded-full overflow-hidden  shadow-[inset_2px_2px_6px_rgba(59,130,246,0.6)]">
+              <input
+                className="flex-1 px-6  outline-none"
+                type="text"
+                placeholder="paste your youtube link here"
+              />
+
+              <motion.button
+                type="submit"
+                whileHover={{
+                  boxShadow: "0 0 20px rgba(14, 165, 233, 0.6)",
+                }}
+                className="h-full cursor-pointer py-3 bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] text-xl text-white px-8 font-bold"
+              >
+                <h1>condense</h1>
+              </motion.button>
+            </form>
+          </div>
 
           {/* Floating Elements */}
           {/* <motion.div
@@ -512,35 +519,41 @@ export default function CondenserLanding() {
           <div className="grid md:grid-cols-3 gap-12 mb-12">
             <div>
               <div className="text-2xl font-black mb-4">
-                Condenser <span className="bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] bg-clip-text text-transparent">AI</span>
+                Condenser{" "}
+                <span className="bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] bg-clip-text text-transparent">
+                  AI
+                </span>
               </div>
               <p className="text-cyan-100/60 text-sm">
-                Turn 50+ minute lectures into crisp, high-value learning sessions.
+                Turn 50+ minute lectures into crisp, high-value learning
+                sessions.
               </p>
             </div>
 
             <div>
               <h4 className="font-bold mb-4">Quick Links</h4>
               <div className="space-y-2">
-                {['Home', 'Features', 'Gallery', 'Pricing', 'Contact Us'].map((link) => (
-                  <a
-                    key={link}
-                    href={`/${link.toLowerCase().replace(' ', '-')}`}
-                    className="block text-cyan-100/60 hover:text-[#0EA5E9] transition-colors text-sm"
-                  >
-                    {link}
-                  </a>
-                ))}
+                {["Home", "Features", "Gallery", "Pricing", "Contact Us"].map(
+                  (link) => (
+                    <a
+                      key={link}
+                      href={`/${link.toLowerCase().replace(" ", "-")}`}
+                      className="block text-cyan-100/60 hover:text-[#0EA5E9] transition-colors text-sm"
+                    >
+                      {link}
+                    </a>
+                  ),
+                )}
               </div>
             </div>
 
             <div>
               <h4 className="font-bold mb-4">Legal</h4>
               <div className="space-y-2">
-                {['Privacy Policy', 'Terms of Service'].map((link) => (
+                {["Privacy Policy", "Terms of Service"].map((link) => (
                   <a
                     key={link}
-                    href={`/${link.toLowerCase().replace(' ', '-')}`}
+                    href={`/${link.toLowerCase().replace(" ", "-")}`}
                     className="block text-cyan-100/60 hover:text-[#0EA5E9] transition-colors text-sm"
                   >
                     {link}

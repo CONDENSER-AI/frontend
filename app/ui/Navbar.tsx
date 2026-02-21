@@ -1,3 +1,4 @@
+
 import { motion } from 'motion/react';
 import { useState, useEffect } from 'react';
 
@@ -19,7 +20,7 @@ function Navbar() {  const [isScrolled, setIsScrolled] = useState(false);
         }`}
       >
         <div className="max-w-fit mx-auto px-2 py-2 flex items-center justify-center
-        bg-white/10 backdrop-blur-md border border-white/10 rounded-4xl 
+        bg-white/10 backdrop-blur-md border border-white/10 rounded-4xl shadow-[inset_2px_2px_6px_rgba(100,130,246,0.15)]
         ">
           
           
@@ -34,7 +35,7 @@ function Navbar() {  const [isScrolled, setIsScrolled] = useState(false);
                 whileHover={{ y: -2 }}
                 className="text-sm font-semibold hover:text-[#0EA5E9] transition-colors"
               >
-                {item}
+             {item}
               </motion.a>
             ))}
             <motion.a
