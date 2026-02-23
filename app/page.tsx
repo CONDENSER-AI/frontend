@@ -148,7 +148,7 @@ export default function CondenserLanding() {
       {/* ── ambient glow ── */}
       <div className="pointer-events-none fixed inset-0 z-0">
        
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[100px] bg-[#FFF]/15 blur-[120px] rounded-full" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[100px] bg-[#FFF]/15 blur-[80px] rounded-full" />
       </div>
 
       <Navbar />
