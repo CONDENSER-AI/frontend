@@ -3,10 +3,10 @@ import { useState, useEffect } from "react";
 
 function Navbar() {
   const navItems = [
-    { Home: "/" },
-    { Features: "/features" },
-    { Pricing: "/pricing" },
-    { Contact: "/contact" },
+
+    { Features: "#features" },
+    { Pricing: "#pricing" },
+    { Contact: "#contact" },
   ];
 
   const [isScrolled, setIsScrolled] = useState(false);
@@ -40,13 +40,13 @@ function Navbar() {
             return (
               <motion.a
                 key={index}
-                href={link}
+                onClick={()=> scrollTo({top: document.querySelector(link)?.getBoundingClientRect().top! + window.scrollY - 80, behavior: "smooth"})}
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 + index * 0.1 }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="text-gray-300 hover:text-white transition-colors"
+                className="text-gray-300 hover:text-white cursor-pointer transition-colors"
               >
                 {name}
               </motion.a>
