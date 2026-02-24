@@ -1,58 +1,72 @@
+import { motion } from "motion/react";
+import { useState, useEffect } from "react";
 
-import { motion } from 'motion/react';
-import { useState, useEffect } from 'react';
+function Navbar() {
+  const navItems = [
+    { Home: "/" },
+    { Features: "/features" },
+    { Pricing: "/pricing" },
+    { Contact: "/contact" },
+  ];
 
-function Navbar() {  const [isScrolled, setIsScrolled] = useState(false);
-      useEffect(() => {
+  const [isScrolled, setIsScrolled] = useState(false);
+  useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
   return (
-  <motion.nav
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className={`fixed top-5 left-0 right-0 z-50 transition-all duration-500 
+    <motion.nav
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      className={`fixed top-5 left-0 right-0 z-50 transition-all duration-500 
        
         }`}
+    >
+      <div
+        className={` mx-auto px-2 py-2 flex items-center justify-between
+         backdrop-blur-md rounded-2xl transition-all border border-white/0 ease-in duration-200 
+        ${isScrolled ? "max-w-xl bg-white/10  border-white/10  shadow-[inset_2px_2px_6px_rgba(100,130,246,0.15)]" : " max-w-4xl  " }`}
       >
-        <div className="max-w-fit mx-auto px-2 py-2 flex items-center justify-center
-        bg-white/10 backdrop-blur-md border border-white/10 rounded-4xl shadow-[inset_2px_2px_6px_rgba(100,130,246,0.15)]
-        ">
-          
-          
-          <div className="hidden md:flex gap-8 items-center justify-center ml-2">
-            {['Home', 'Features', 'Pricing'].map((item, i) => (
+        <span className="text-white bg-black font-bold border border-white/10 px-2 py-1 rounded-full">
+          C
+        </span>
+        <div className="hidden md:flex gap-8 items-center justify-center ml-2">
+          {navItems.map((item, index) => {
+            const [name, link] = Object.entries(item)[0];
+            return (
               <motion.a
-                key={item}
-                href={`#${item.toLowerCase()}`}
+                key={index}
+                href={link}
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 + 0.2 }}
-                whileHover={{ y: -2 }}
-                className="text-sm font-semibold hover:text-[#0EA5E9] transition-colors"
+                transition={{ delay: 0.2 + index * 0.1 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="text-gray-300 hover:text-white transition-colors"
               >
-             {item}
+                {name}
               </motion.a>
-            ))}
-            <motion.a
-              href="/signup"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.6 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] text-white px-6 py-2 rounded-full font-bold text-sm hover:shadow-lg hover:shadow-cyan-500/50 transition-all"
-            >
-              Get Started
-            </motion.a>
-          </div>
+            );
+          })}
         </div>
-      </motion.nav>
-  )
+        <motion.a
+          href="/signup"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.6 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] text-white px-6 py-2 rounded-xl font-bold text-sm hover:shadow-lg hover:shadow-cyan-500/50 transition-all"
+        >
+          Get Started
+        </motion.a>
+      </div>
+    </motion.nav>
+  );
 }
 
-export default Navbar
+export default Navbar;

@@ -161,8 +161,42 @@ export default function CondenserLanding() {
         ref={heroRef}
         style={{ opacity: heroOpacity, scale: heroScale }}
         className="min-h-screen w-full flex items-center justify-center relative pt-24 pb-16"
-      >
+      > <div className="absolute inset-0 w-full opacity-10 flex">
+      
+      {/* LEFT SIDE >>>>> */}
+      <div className="relative w-1/2 h-full overflow-hidden">
+        <div className="absolute inset-[-40%] rotate-45 flex flex-col gap-6">
+          {Array.from({ length: 20 }).map((_, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, scaleX: 0 }}
+              animate={{ opacity: 0.15, scaleX: 1 }}
+              transition={{ delay: i * 0.05, duration: 0.6 }}
+              className="h-10 w-[200%] bg-white"
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* RIGHT SIDE <<<<< */}
+      <div className="relative w-1/2 h-full overflow-hidden">
+        <div className="absolute inset-[-40%] -rotate-45 flex flex-col gap-6">
+          {Array.from({ length: 20 }).map((_, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, scaleX: 0 }}
+              animate={{ opacity: 0.15, scaleX: 1 }}
+              transition={{ delay: i * 0.05, duration: 0.6 }}
+              className="h-10 w-[200%] bg-white"
+            />
+          ))}
+        </div>
+      </div>
+
+    </div>
         <div className="max-w-5xl w-full mx-auto px-6 text-center relative z-10">
+
+
 
           {/* Pill badge */}
           <motion.div
@@ -209,15 +243,15 @@ export default function CondenserLanding() {
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.65 }}
+            transition={{ duration: 1, delay: 0.35 }}
             className="flex justify-center "
           >
             <div
-              className={`relative flex items-center  w-full max-w-2xl rounded-2xl transition-all duration-300 ${
+              className={`relative flex items-center bg-white/15  w-full max-w-2xl rounded-2xl transition-all duration-300 ${
                 inputFocused
                   ? "shadow-[0_0_0_1px_rgba(14,165,233,0.5),0_0_40px_rgba(14,165,233,0.12)]"
-                  : "shadow-[0_0_0_1px_rgba(255,255,255,0.08)]"
-              } bg-white/[0.04] backdrop-blur-xl`}
+                  : "shadow-[inset_2px_2px_6px_rgba(100,130,246,0.15)]"
+              } backdrop-blur-xl`}
             >
               {/* YouTube icon */}
               <div className="pl-5 pr-3 shrink-0">
@@ -248,7 +282,7 @@ export default function CondenserLanding() {
                   </svg>
                   {/* shimmer */}
                   <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent"
                     animate={{ x: ["-100%", "100%"] }}
                     transition={{ repeat: Infinity, duration: 2.5, ease: "linear", repeatDelay: 1 }}
                   />
@@ -257,60 +291,13 @@ export default function CondenserLanding() {
             </div>
           </motion.div>
 
-          {/* Social proof */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.9 }}
-            className="mt-8 flex items-center justify-center gap-6 text-white/30 text-xs"
-          >
-            <div className="flex items-center gap-2">
-              <div className="flex -space-x-2">
-                {["C","D","A","N","U"].map((l, i) => (
-                  <div key={i} className="w-6 h-6 rounded-full bg-gradient-to-br from-[#0EA5E9] to-[#06B6D4] flex items-center justify-center text-[9px] font-bold border border-[#080808]">
-                    {l}
-                  </div>
-                ))}
-              </div>
-              <span>5,000+ lectures condensed</span>
-            </div>
-            <span className="w-px h-3 bg-white/10" />
-            <div className="flex items-center gap-1.5">
-              {[1,2,3,4,5].map(i => (
-                <svg key={i} width="10" height="10" viewBox="0 0 24 24" fill="#0EA5E9">
-                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                </svg>
-              ))}
-              <span>Loved by students</span>
-            </div>
-          </motion.div>
-
-          {/* Floating deco elements — refined */}
-          <motion.div
-            animate={{ y: [0, -14, 0] }}
-            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute top-24 left-4 w-14 h-14 border border-white/[0.06] rounded-2xl backdrop-blur-sm bg-white/[0.02] flex items-center justify-center"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(14,165,233,0.4)" strokeWidth="1.5">
-              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </motion.div>
-          <motion.div
-            animate={{ y: [0, 14, 0] }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-            className="absolute bottom-24 right-4 w-16 h-16 border border-white/[0.06] rounded-full backdrop-blur-sm bg-white/[0.02] flex items-center justify-center"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(6,182,212,0.4)" strokeWidth="1.5">
-              <path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </motion.div>
         </div>
 
         {/* Bottom fade */}
         <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-[#080808] to-transparent pointer-events-none" />
       </motion.section>
 
-<hr className="w-full border-white/[0.08]" />
+     <hr className="w-full border-white/[0.08]" />
       {/* ══════════════════════════════════════════════════════
           STATS STRIP
       ══════════════════════════════════════════════════════ */}
@@ -612,7 +599,12 @@ export default function CondenserLanding() {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
                 className="bg-white/[0.03] border border-white/[0.07] rounded-2xl p-10 md:p-14"
-              >
+              >  
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[1px] bg-gradient-to-r from-transparent via-[#0EA5E9]/60 to-transparent" />
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[160px] h-[40px] bg-[#0EA5E9]/5 blur-xl" />
+
+                       
+                      
                 {/* quote mark */}
                 <svg width="32" height="24" viewBox="0 0 32 24" fill="none" className="mb-8 opacity-30">
                   <path d="M0 24V14.4C0 6.08 4.48 1.28 13.44 0l1.44 2.4C10.24 3.52 7.68 6.08 7.04 10.56H13.44V24H0ZM18.56 24V14.4C18.56 6.08 23.04 1.28 32 0l1.44 2.4C28.8 3.52 26.24 6.08 25.6 10.56H32V24H18.56Z" fill="#0EA5E9"/>
@@ -621,6 +613,7 @@ export default function CondenserLanding() {
                   {reviews[currentReview].text}
                 </p>
                 <div className="flex items-center gap-4">
+                  
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#0EA5E9] to-[#06B6D4] flex items-center justify-center font-bold text-sm">
                     {reviews[currentReview].name[0]}
                   </div>
@@ -636,6 +629,7 @@ export default function CondenserLanding() {
                       </svg>
                     ))}
                   </div>
+                  
                 </div>
               </motion.div>
             </AnimatePresence>
