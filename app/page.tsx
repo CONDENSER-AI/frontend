@@ -237,9 +237,9 @@ export default function CondenserLanding() {
               >
                 {/* connector line */}
                 {i < 2 && (
-                  <div className="hidden md:block absolute top-8 left-[calc(100%+1px)] w-6 h-px bg-gradient-to-r from-white/10 to-transparent z-10" />
+                  <div className="hidden md:block absolute top-8 left-[calc(100%+1px)] w-6 h-px bg-gradient-to-r from-white/10 to-white/40 z-10" />
                 )}
-                <div className="relative bg-white/[0.03] border border-white/[0.07] rounded-2xl p-8 hover:border-[#0EA5E9]/30 hover:bg-white/[0.05] transition-all duration-500">
+                <div className="relative bg-white/[0.09] border border-white/[0.07] rounded-2xl p-8 hover:border-[#0EA5E9]/30 hover:bg-white/[0.05] transition-all duration-500">
                   {/* step number */}
                   <div className="flex items-start justify-between mb-6">
                     <span className="text-xs font-mono font-semibold text-[#0EA5E9]/60 tracking-widest">{item.step}</span>
@@ -255,6 +255,7 @@ export default function CondenserLanding() {
           </div>
         </div>
       </section>
+
 <hr className="w-full border-white/[0.08]" />
       {/* ══════════════════════════════════════════════════════
           FEATURES
@@ -280,7 +281,7 @@ export default function CondenserLanding() {
                 transition={{ duration: 0.7, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
                 className="group"
               >
-                <div className="relative bg-white/[0.03] border border-white/[0.07] rounded-2xl p-8 md:p-10 hover:border-[#0EA5E9]/25 hover:bg-white/[0.05] transition-all duration-500 overflow-hidden">
+                <div className="relative bg-white/[0.09] border border-white/[0.07] rounded-2xl p-8 md:p-10 hover:border-[#0EA5E9]/25 hover:bg-white/[0.05] transition-all duration-500 overflow-hidden">
                   {/* hover glow */}
                   <div className="absolute inset-0 bg-gradient-to-r from-[#0EA5E9]/0 to-[#06B6D4]/0 group-hover:from-[#0EA5E9]/[0.03] group-hover:to-[#06B6D4]/[0.03] transition-all duration-700" />
 
@@ -373,7 +374,7 @@ export default function CondenserLanding() {
                     className={`relative h-full rounded-3xl p-8 overflow-hidden ${
                       plan.featured
                         ? "bg-[#0A1628] border border-[#0EA5E9]/20"
-                        : "bg-white/[0.03] border border-white/[0.07]"
+                        : "bg-white/[0.09] border border-white/[0.07]"
                     }`}
                   >
                     {plan.featured && (
@@ -470,7 +471,7 @@ export default function CondenserLanding() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-                className="bg-white/[0.03] border border-white/[0.07] rounded-2xl p-10 md:p-14"
+                className="bg-white/[0.09] border border-white/[0.07] rounded-2xl p-10 md:p-14"
               >  
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[1px] bg-gradient-to-r from-transparent via-[#0EA5E9]/60 to-transparent" />
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[160px] h-[40px] bg-[#0EA5E9]/5 blur-xl" />

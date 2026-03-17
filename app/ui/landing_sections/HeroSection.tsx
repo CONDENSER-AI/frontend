@@ -1,4 +1,4 @@
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform } from "motion/react";
 import { useRef, useState } from "react";
 
 function HeroSection() {
@@ -128,7 +128,7 @@ function HeroSection() {
                   type="button"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
-                  className="relative overflow-hidden flex items-center gap-2 bg-gradient-to-r from-[#3d98c2] to-[#06B6D4] text-white text-sm font-semibold px-6 py-2.5 rounded-xl cursor-pointer"
+                  className="relative overflow-hidden flex items-center gap-2 bg-gradient-to-r from-[#5946d7] to-[#06B6D4] text-white text-sm font-semibold px-6 py-2.5 rounded-xl cursor-pointer"
                 >
                   <span className="relative z-10">Condense</span>
                   <svg className="relative z-10" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -136,7 +136,7 @@ function HeroSection() {
                   </svg>
                   {/* shimmer */}
                   <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/60 to-transparent"
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-400 to-transparent"
                     animate={{ x: ["-100%", "100%"] }}
                     transition={{ repeat: Infinity, duration: 2.5, ease: "linear", repeatDelay: 1 }}
                   />

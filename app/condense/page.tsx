@@ -11,7 +11,7 @@ export default function Page() {
         videoId="TjZBTDzGeGg"
         skipMap={[
           { from: 0, to: 60 },    
-          { from: 62, to: 140 },   
+          { from: 122, to: 140 },   
         ]}
       />
     </div>
