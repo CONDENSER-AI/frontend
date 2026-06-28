@@ -3,10 +3,11 @@
 import { motion, useScroll, useTransform, useInView, AnimatePresence } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
 import Navbar from "./ui/Navbar";
+import { useRouter } from "next/navigation";
 import { ReactLenis, useLenis } from 'lenis/react'
 import HeroSection from "./ui/landing_sections/HeroSection";
 // ── Micro: animated gradient border ──────────────────────────────────────────
-const GlowBorder = ({ children, className = "", featured = false }) => (
+const GlowBorder = ({ children, className = "", featured = false }: { children: React.ReactNode; className?: string; featured?: boolean }) => (
   <div className={`relative ${className}`}>
     {featured && (
       <div className="absolute -inset-[1px] rounded-3xl bg-gradient-to-br from-[#0EA5E9] via-[#06B6D4] to-[#0EA5E9] opacity-60 blur-[2px]" />
@@ -28,7 +29,7 @@ const GrainOverlay = () => (
 );
 
 // ── Micro: section tag pill ───────────────────────────────────────────────────
-const SectionTag = ({ children }) => (
+const SectionTag = ({ children }: { children: React.ReactNode }) => (
   <motion.div
     initial={{ opacity: 0, y: 10 }}
     whileInView={{ opacity: 1, y: 0 }}
@@ -44,7 +45,7 @@ const SectionTag = ({ children }) => (
 );
 
 // ── Micro: animated count-up ─────────────────────────────────────────────────
-const CountUp = ({ end, suffix = "" }) => {
+const CountUp = ({ end, suffix = "" }: { end: number; suffix?: string }) => {
   const [val, setVal] = useState(0);
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true });
@@ -69,8 +70,7 @@ const Divider = () => (
 
 export default function CondenserLanding() {
   const [currentReview, setCurrentReview] = useState(0);
-  const [inputValue, setInputValue] = useState("");
-  const [inputFocused, setInputFocused] = useState(false);
+
 
   const heroRef = useRef(null);
   const { scrollYProgress } = useScroll();
@@ -126,7 +126,7 @@ export default function CondenserLanding() {
     { value: 98, suffix: "%", label: "Satisfaction rate" },
   ];
 
-  const SectionTitle = ({ children, delay = 0 }) => {
+  const SectionTitle = ({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) => {
     const ref = useRef(null);
     const isInView = useInView(ref, { once: true, margin: "-80px" });
     return (
@@ -142,10 +142,12 @@ export default function CondenserLanding() {
     );
   };
 
+
+
   return (<>
 
     <ReactLenis root/>
-    <div className="flex flex-col items-center bg-[#080808] text-white min-h-screen overflow-x-hidden">
+    <div className="flex flex-col items-center bg-[var(--bg)] text-[var(--fg)] min-h-screen overflow-x-hidden">
       <GrainOverlay />
 
  <div className="pointer-events-none fixed inset-0 opacity-5 flex overflow-hidden">
@@ -158,7 +160,7 @@ export default function CondenserLanding() {
             initial={{ opacity: 0, x: -40 }}
             animate={{ opacity: 0.15, x: 0 }}
             transition={{ delay: i * 0.04, duration: 0.6 }}
-            className="w-2 h-full bg-white"
+             className="w-2 h-full bg-[var(--inverse)]"
           />
         ))}
       </div>
@@ -171,7 +173,7 @@ export default function CondenserLanding() {
             initial={{ opacity: 0, x: 40 }}
             animate={{ opacity: 0.15, x: 0 }}
             transition={{ delay: i * 0.04, duration: 0.6 }}
-            className="w-2 h-full bg-white"
+            className="w-2 h-full bg-[var(--inverse)]"
           />
         ))}
       </div>
@@ -182,7 +184,7 @@ export default function CondenserLanding() {
       {/* ── ambient glow ── */}
       <div className="pointer-events-none fixed inset-0 z-0">
        
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[100px] bg-[#FFF]/15 blur-[80px] rounded-full" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[100px] bg-[var(--inverse)]/15 blur-[80px] rounded-full" />
       </div>
 
       <Navbar />
@@ -192,7 +194,7 @@ export default function CondenserLanding() {
       ══════════════════════════════════════════════════════ */}
      <HeroSection/>
 
-     <hr className="w-full border-white/[0.08]" />
+     <hr className="w-full border-[var(--border-2)]" />
     
     
       {/* ══════════════════════════════════════════════════════
@@ -207,7 +209,10 @@ export default function CondenserLanding() {
               works
             </h1>
           </SectionTitle>
-          <p className="text-white/35 text-base mb-16 font-light">Three steps. Seconds to start.</p>
+          <p className="text-[var(--inverse)]/35 text-base mb-16 font-light">Three steps. Seconds to start.</p>
+
+          {/* Quick paste URL form */}
+       
 
           <div className="grid md:grid-cols-3 gap-6">
             {[
@@ -237,9 +242,9 @@ export default function CondenserLanding() {
               >
                 {/* connector line */}
                 {i < 2 && (
-                  <div className="hidden md:block absolute top-8 left-[calc(100%+1px)] w-6 h-px bg-gradient-to-r from-white/10 to-white/40 z-10" />
+                  <div className="hidden md:block absolute top-8 left-[calc(100%+1px)] w-6 h-px bg-gradient-to-r from-[var(--inverse)]/10 to-[var(--inverse)]/40 z-10" />
                 )}
-                <div className="relative bg-white/[0.09] border border-white/[0.07] rounded-2xl p-8 hover:border-[#0EA5E9]/30 hover:bg-white/[0.05] transition-all duration-500">
+                <div className="relative bg-[var(--card-alpha)] border border-[var(--border)] rounded-2xl p-8 hover:border-[#0EA5E9]/30 hover:bg-[var(--card-alpha-hover)] transition-all duration-500">
                   {/* step number */}
                   <div className="flex items-start justify-between mb-6">
                     <span className="text-xs font-mono font-semibold text-[#0EA5E9]/60 tracking-widest">{item.step}</span>
@@ -247,8 +252,8 @@ export default function CondenserLanding() {
                       <div className="w-2 h-2 rounded-full bg-[#0EA5E9]/60 group-hover:bg-[#0EA5E9] transition-colors" />
                     </div>
                   </div>
-                  <h3 className="text-lg font-bold mb-3 text-white/90">{item.title}</h3>
-                  <p className="text-white/40 text-sm leading-relaxed">{item.description}</p>
+                  <h3 className="text-lg font-bold mb-3 text-[var(--inverse)]/90">{item.title}</h3>
+                  <p className="text-[var(--inverse)]/40 text-sm leading-relaxed">{item.description}</p>
                 </div>
               </motion.div>
             ))}
@@ -256,7 +261,7 @@ export default function CondenserLanding() {
         </div>
       </section>
 
-<hr className="w-full border-white/[0.08]" />
+<hr className="w-full border-[var(--border-2)]" />
       {/* ══════════════════════════════════════════════════════
           FEATURES
       ══════════════════════════════════════════════════════ */}
@@ -269,7 +274,7 @@ export default function CondenserLanding() {
               capabilities
             </h1>
           </SectionTitle>
-          <p className="text-white/35 text-base mb-16 font-light">Everything you need to study smarter.</p>
+          <p className="text-[var(--inverse)]/35 text-base mb-16 font-light">Everything you need to study smarter.</p>
 
           <div className="space-y-4">
             {features.map((feature, i) => (
@@ -281,7 +286,7 @@ export default function CondenserLanding() {
                 transition={{ duration: 0.7, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
                 className="group"
               >
-                <div className="relative bg-white/[0.09] border border-white/[0.07] rounded-2xl p-8 md:p-10 hover:border-[#0EA5E9]/25 hover:bg-white/[0.05] transition-all duration-500 overflow-hidden">
+                <div className="relative bg-[var(--card-alpha)] border border-[var(--border)] rounded-2xl p-8 md:p-10 hover:border-[#0EA5E9]/25 hover:bg-[var(--card-alpha-hover)] transition-all duration-500 overflow-hidden">
                   {/* hover glow */}
                   <div className="absolute inset-0 bg-gradient-to-r from-[#0EA5E9]/0 to-[#06B6D4]/0 group-hover:from-[#0EA5E9]/[0.03] group-hover:to-[#06B6D4]/[0.03] transition-all duration-700" />
 
@@ -295,15 +300,15 @@ export default function CondenserLanding() {
                       <div className="flex items-center gap-3 mb-2">
                         <span className="text-xs font-semibold text-[#0EA5E9]/60 tracking-widest uppercase">{feature.tag}</span>
                       </div>
-                      <h3 className="text-xl md:text-2xl font-bold mb-1 text-white/90">{feature.title}</h3>
+                      <h3 className="text-xl md:text-2xl font-bold mb-1 text-[var(--inverse)]/90">{feature.title}</h3>
                       {feature.subtitle && (
                         <p className="text-sm font-medium text-[#0EA5E9]/70 mb-3">{feature.subtitle}</p>
                       )}
-                      <p className="text-white/40 text-sm leading-relaxed max-w-2xl">{feature.description}</p>
+                      <p className="text-[var(--inverse)]/40 text-sm leading-relaxed max-w-2xl">{feature.description}</p>
                     </div>
 
                     {/* arrow micro */}
-                    <div className="shrink-0 hidden md:flex w-8 h-8 rounded-full border border-white/[0.06] items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
+                    <div className="shrink-0 hidden md:flex w-8 h-8 rounded-full border border-[var(--border-light)] items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(14,165,233,0.6)" strokeWidth="2">
                         <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
@@ -315,7 +320,7 @@ export default function CondenserLanding() {
           </div>
         </div>
       </section>
-<hr className="w-full border-white/[0.08]" />
+<hr className="w-full border-[var(--border-2)]" />
       {/* ══════════════════════════════════════════════════════
           PRICING
       ══════════════════════════════════════════════════════ */}
@@ -328,7 +333,7 @@ export default function CondenserLanding() {
               suit you
             </h1>
           </SectionTitle>
-          <p className="text-white/35 text-base mb-16 font-light">Start free. Scale when you're ready.</p>
+          <p className="text-[var(--inverse)]/35 text-base mb-16 font-light">Start free. Scale when you're ready.</p>
 
           <div className="grid md:grid-cols-2 gap-5">
             {[
@@ -373,8 +378,8 @@ export default function CondenserLanding() {
                   <div
                     className={`relative h-full rounded-3xl p-8 overflow-hidden ${
                       plan.featured
-                        ? "bg-[#0A1628] border border-[#0EA5E9]/20"
-                        : "bg-white/[0.09] border border-white/[0.07]"
+                        ? "bg-[var(--bg-featured)] border border-[#0EA5E9]/20"
+                        : "bg-[var(--card-alpha)] border border-[var(--border)]"
                     }`}
                   >
                     {plan.featured && (
@@ -390,17 +395,17 @@ export default function CondenserLanding() {
                       </div>
                     )}
 
-                    <h3 className="text-base font-semibold text-white/60 mb-6">{plan.name}</h3>
+                    <h3 className="text-base font-semibold text-[var(--inverse)]/60 mb-6">{plan.name}</h3>
 
                     <div className="mb-1 flex items-end gap-2">
-                      <span className={`text-4xl font-black ${plan.featured ? "bg-gradient-to-r from-[#7DD3FC] to-[#06B6D4] bg-clip-text text-transparent" : "text-white"}`}>
+                      <span className={`text-4xl font-black ${plan.featured ? "bg-gradient-to-r from-[#7DD3FC] to-[#06B6D4] bg-clip-text text-transparent" : "text-[var(--fg)]"}`}>
                         {plan.price}
                       </span>
                     </div>
-                    <p className="text-white/30 text-xs mb-4">{plan.priceNote}</p>
-                    <p className="text-white/45 text-sm mb-8 leading-relaxed">{plan.description}</p>
+                    <p className="text-[var(--inverse)]/30 text-xs mb-4">{plan.priceNote}</p>
+                    <p className="text-[var(--inverse)]/45 text-sm mb-8 leading-relaxed">{plan.description}</p>
 
-                    <div className="h-px w-full bg-white/[0.06] mb-8" />
+                    <div className="h-px w-full bg-[var(--border-light)] mb-8" />
 
                     <div className="space-y-4 mb-10">
                       {plan.features.map((feature, fi) => (
@@ -412,12 +417,12 @@ export default function CondenserLanding() {
                           transition={{ delay: i * 0.15 + fi * 0.08 }}
                           className="flex items-center gap-3"
                         >
-                          <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${plan.featured ? "bg-[#0EA5E9]/20" : "bg-white/[0.06]"}`}>
+                          <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${plan.featured ? "bg-[#0EA5E9]/20" : "bg-[var(--border-light)]"}`}>
                             <svg width="8" height="8" viewBox="0 0 12 12" fill="none">
                               <path d="M2 6l3 3 5-5" stroke={plan.featured ? "#0EA5E9" : "rgba(255,255,255,0.4)"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                             </svg>
                           </div>
-                          <span className="text-white/55 text-sm">{feature}</span>
+                          <span className="text-[var(--inverse)]/55 text-sm">{feature}</span>
                         </motion.div>
                       ))}
                     </div>
@@ -429,7 +434,7 @@ export default function CondenserLanding() {
                       className={`relative overflow-hidden block text-center py-3.5 rounded-xl text-sm font-semibold transition-all ${
                         plan.featured
                           ? "bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] text-white"
-                          : "bg-white/[0.06] text-white/70 hover:bg-white/[0.1] border border-white/[0.08]"
+                          : "bg-[var(--border-light)] text-[var(--inverse)]/70 hover:bg-[var(--inverse)]/10 border border-[var(--border-2)]"
                       }`}
                     >
                       {plan.featured && (
@@ -448,7 +453,7 @@ export default function CondenserLanding() {
           </div>
         </div>
       </section>
-<hr className="w-full border-white/[0.08]" />
+<hr className="w-full border-[var(--border-2)]" />
       {/* ══════════════════════════════════════════════════════
           REVIEWS
       ══════════════════════════════════════════════════════ */}
@@ -461,7 +466,7 @@ export default function CondenserLanding() {
               think
             </h1>
           </SectionTitle>
-          <p className="text-white/35 text-base mb-16 font-light">From students who've reclaimed their time.</p>
+          <p className="text-[var(--inverse)]/35 text-base mb-16 font-light">From students who've reclaimed their time.</p>
 
           <div className="relative">
             <AnimatePresence mode="wait">
@@ -471,7 +476,7 @@ export default function CondenserLanding() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-                className="bg-white/[0.09] border border-white/[0.07] rounded-2xl p-10 md:p-14"
+                className="bg-[var(--card-alpha)] border border-[var(--border)] rounded-2xl p-10 md:p-14"
               >  
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[1px] bg-gradient-to-r from-transparent via-[#0EA5E9]/60 to-transparent" />
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[160px] h-[40px] bg-[#0EA5E9]/5 blur-xl" />
@@ -482,7 +487,7 @@ export default function CondenserLanding() {
                 <svg width="32" height="24" viewBox="0 0 32 24" fill="none" className="mb-8 opacity-30">
                   <path d="M0 24V14.4C0 6.08 4.48 1.28 13.44 0l1.44 2.4C10.24 3.52 7.68 6.08 7.04 10.56H13.44V24H0ZM18.56 24V14.4C18.56 6.08 23.04 1.28 32 0l1.44 2.4C28.8 3.52 26.24 6.08 25.6 10.56H32V24H18.56Z" fill="#0EA5E9"/>
                 </svg>
-                <p className="text-xl md:text-2xl text-white/80 font-light leading-relaxed mb-10">
+                <p className="text-xl md:text-2xl text-[var(--inverse)]/80 font-light leading-relaxed mb-10">
                   {reviews[currentReview].text}
                 </p>
                 <div className="flex items-center gap-4">
@@ -491,8 +496,8 @@ export default function CondenserLanding() {
                     {reviews[currentReview].name[0]}
                   </div>
                   <div>
-                    <div className="text-sm font-semibold text-white/80">{reviews[currentReview].name}</div>
-                    <div className="text-xs text-white/35">{reviews[currentReview].role}</div>
+                    <div className="text-sm font-semibold text-[var(--inverse)]/80">{reviews[currentReview].name}</div>
+                    <div className="text-xs text-[var(--inverse)]/35">{reviews[currentReview].role}</div>
                   </div>
                   {/* stars */}
                   <div className="ml-auto flex gap-1">
@@ -515,7 +520,7 @@ export default function CondenserLanding() {
                     key={i}
                     onClick={() => setCurrentReview(i)}
                     className={`h-1 rounded-full transition-all duration-300 ${
-                      i === currentReview ? "w-8 bg-[#0EA5E9]" : "w-2 bg-white/15"
+                      i === currentReview ? "w-8 bg-[#0EA5E9]" : "w-2 bg-[var(--inverse)]/15"
                     }`}
                   />
                 ))}
@@ -532,7 +537,7 @@ export default function CondenserLanding() {
                     onClick={fn}
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
-                    className="w-10 h-10 bg-white/[0.04] border border-white/[0.08] rounded-xl flex items-center justify-center hover:border-[#0EA5E9]/30 hover:bg-[#0EA5E9]/10 transition-all"
+                    className="w-10 h-10 bg-[var(--card-alpha-2)] border border-[var(--border-2)] rounded-xl flex items-center justify-center hover:border-[#0EA5E9]/30 hover:bg-[#0EA5E9]/10 transition-all"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2">
                       {dir === "left"
@@ -546,7 +551,7 @@ export default function CondenserLanding() {
           </div>
         </div>
       </section>
-<hr className="w-full border-white/[0.08]" />
+<hr className="w-full border-[var(--border-2)]" />
       {/* ══════════════════════════════════════════════════════
           CTA
       ══════════════════════════════════════════════════════ */}
@@ -558,7 +563,7 @@ export default function CondenserLanding() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
-            className="relative rounded-3xl overflow-hidden border border-[#0EA5E9]/15 bg-[#0A1628] p-14 md:p-20 text-center"
+            className="relative rounded-3xl overflow-hidden border border-[#0EA5E9]/15 bg-[var(--bg-featured)] p-14 md:p-20 text-center"
           >
             {/* glow */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[2px] bg-gradient-to-r from-transparent via-[#0EA5E9]/50 to-transparent" />
@@ -571,7 +576,7 @@ export default function CondenserLanding() {
                 Start learning faster.
               </span>
             </h1>
-            <p className="text-white/35 text-base mb-10 max-w-xl mx-auto font-light">
+            <p className="text-[var(--inverse)]/35 text-base mb-10 max-w-xl mx-auto font-light">
               Join thousands of students who've reclaimed hours every week with Condenser AI.
             </p>
             <motion.a
@@ -593,11 +598,11 @@ export default function CondenserLanding() {
           </motion.div>
         </div>
       </section>
-<hr className="w-full border-white/[0.08]" />
+<hr className="w-full border-[var(--border-2)]" />
       {/* ══════════════════════════════════════════════════════
           FOOTER
       ══════════════════════════════════════════════════════ */}
-      <footer className="w-full border-t border-white/[0.06] py-16 relative z-10">
+      <footer className="w-full border-t border-[var(--border-light)] py-16 relative z-10">
         <div className="max-w-5xl mx-auto px-6">
           <div className="grid md:grid-cols-3 gap-12 mb-12">
             <div>
@@ -607,18 +612,18 @@ export default function CondenserLanding() {
                   AI
                 </span>
               </div>
-              <p className="text-white/30 text-sm leading-relaxed max-w-[220px]">
+              <p className="text-[var(--inverse)]/30 text-sm leading-relaxed max-w-[220px]">
                 Turn 50+ minute lectures into crisp, high-value learning sessions.
               </p>
             </div>
             <div>
-              <h4 className="text-xs font-semibold text-white/40 tracking-widest uppercase mb-5">Navigation</h4>
+              <h4 className="text-xs font-semibold text-[var(--inverse)]/40 tracking-widest uppercase mb-5">Navigation</h4>
               <div className="space-y-3">
                 {["Home", "Features", "Pricing", "Contact Us"].map((link) => (
                   <a
                     key={link}
                     href={`/${link.toLowerCase().replace(" ", "-")}`}
-                    className="block text-white/35 hover:text-[#0EA5E9] transition-colors text-sm"
+                    className="block text-[var(--inverse)]/35 hover:text-[#0EA5E9] transition-colors text-sm"
                   >
                     {link}
                   </a>
@@ -626,13 +631,13 @@ export default function CondenserLanding() {
               </div>
             </div>
             <div>
-              <h4 className="text-xs font-semibold text-white/40 tracking-widest uppercase mb-5">Legal</h4>
+              <h4 className="text-xs font-semibold text-[var(--inverse)]/40 tracking-widest uppercase mb-5">Legal</h4>
               <div className="space-y-3">
                 {["Privacy Policy", "Terms of Service"].map((link) => (
                   <a
                     key={link}
                     href={`/${link.toLowerCase().replace(/\s+/g, "-")}`}
-                    className="block text-white/35 hover:text-[#0EA5E9] transition-colors text-sm"
+                    className="block text-[var(--inverse)]/35 hover:text-[#0EA5E9] transition-colors text-sm"
                   >
                     {link}
                   </a>
@@ -640,9 +645,9 @@ export default function CondenserLanding() {
               </div>
             </div>
           </div>
-          <div className="border-t border-white/[0.05] pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <span className="text-white/20 text-xs">© 2026 Condenser AI. All rights reserved.</span>
-            <div className="flex items-center gap-1.5 text-white/15 text-xs">
+          <div className="border-t border-[var(--border-lighter)] pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <span className="text-[var(--inverse)]/20 text-xs">© 2026 Condenser AI. All rights reserved.</span>
+            <div className="flex items-center gap-1.5 text-[var(--inverse)]/15 text-xs">
               <span className="w-1.5 h-1.5 rounded-full bg-green-500/60 inline-block" />
               All systems operational
             </div>

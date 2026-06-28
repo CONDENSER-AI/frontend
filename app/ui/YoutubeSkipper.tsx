@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useRef, useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-
+import { motion, AnimatePresence } from "motion/react"
+import Image from "next/image"
 type SkipSection = {
   from: number
   to: number
@@ -10,6 +10,7 @@ type SkipSection = {
 type Props = {
   videoId: string
   skipMap: SkipSection[]
+  showStats: boolean
 }
 
 // ── Grain overlay (same as landing) ──────────────────────────────────────────
@@ -30,12 +31,12 @@ function formatTime(seconds: number): string {
   return `${m}:${s.toString().padStart(2, "0")}`
 }
 
-export default function YouTubeSkipper({ videoId, skipMap }: Props) {
+export default function YouTubeSkipper({ videoId, skipMap, showStats }: Props) {
   const playerRef = useRef<any>(null)
   const intervalRef = useRef<any>(null)
   const [isReady, setIsReady] = useState(false)
   const [skipCount, setSkipCount] = useState(0)
-  const [lastSkipToast, setLastSkipToast] = useState<string | null>(null)
+  const [lastSkipToast, setLastSkipToast] = useState<{ msg: string; from: number; to: number; duration: number } | null>(null)
   const [timeSaved, setTimeSaved] = useState(0)
   const toastTimeoutRef = useRef<any>(null)
 
@@ -43,38 +44,74 @@ export default function YouTubeSkipper({ videoId, skipMap }: Props) {
   const totalSkippable = skipMap.reduce((acc, s) => acc + (s.to - s.from), 0)
 
   useEffect(() => {
-    // @ts-expect-error - YT types
-    if (!window.YT) {
+    // Only attempt to create/load player when we have a videoId
+    if (!videoId) return
+
+    const setupPlayer = () => {
+      const YT = (window as any).YT
+      if (!YT || !YT.Player) return
+
+      // If player already exists, load new video id
+      if (playerRef.current && typeof playerRef.current.loadVideoById === "function") {
+        try {
+          playerRef.current.loadVideoById(videoId)
+          setIsReady(true)
+        } catch (e) {
+          // ignore
+        }
+        return
+      }
+
+      // Create new player
+      try {
+        playerRef.current = new YT.Player("yt-player", {
+          videoId,
+          playerVars: {
+            autoplay: 1,
+            controls: 1,
+            modestbranding: 1,
+            rel: 0,
+          },
+          events: {
+            onReady: onPlayerReady,
+          },
+        })
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    // If YT script not loaded, inject and set callback
+    if (!(window as any).YT || !(window as any).YT.Player) {
       const tag = document.createElement("script")
       tag.src = "https://www.youtube.com/iframe_api"
       document.body.appendChild(tag)
-    }
-
-    // @ts-expect-error - YT types
-    window.onYouTubeIframeAPIReady = () => {
-      // @ts-expect-error - YT types
-      playerRef.current = new YT.Player("yt-player", {
-        videoId,
-        playerVars: {
-          autoplay: 1,
-          controls: 1,
-          modestbranding: 1,
-          rel: 0,
-        },
-        events: {
-          onReady: onPlayerReady,
-        },
-      })
+      ;(window as any).onYouTubeIframeAPIReady = setupPlayer
+    } else {
+      setupPlayer()
     }
 
     return () => {
       clearInterval(intervalRef.current)
       if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current)
+      // destroy player instance when component unmounts
+      if (playerRef.current && typeof playerRef.current.destroy === "function") {
+        try { playerRef.current.destroy() } catch (e) {}
+        playerRef.current = null
+      }
     }
-  }, [])
+  }, [videoId])
 
   const onPlayerReady = () => {
     setIsReady(true)
+    // try to start playback (autoplay may be blocked by browser policies)
+    try {
+      if (playerRef.current && typeof playerRef.current.playVideo === "function") {
+        playerRef.current.playVideo()
+      }
+    } catch (e) {
+      // ignore
+    }
     intervalRef.current = setInterval(() => {
       const player = playerRef.current
       if (!player || typeof player.getCurrentTime !== "function") return
@@ -90,19 +127,19 @@ export default function YouTubeSkipper({ videoId, skipMap }: Props) {
           setSkipCount((c) => c + 1)
           setTimeSaved((t) => t + saved)
 
-          // Toast
-          const msg = `Skipped ${formatTime(saved)} of filler`
-          setLastSkipToast(msg)
+          // Overlay
+          setLastSkipToast({ msg: `Skipped ${formatTime(saved)}`, from: section.from, to: section.to, duration: saved })
           if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current)
-          toastTimeoutRef.current = setTimeout(() => setLastSkipToast(null), 2800)
+          toastTimeoutRef.current = setTimeout(() => setLastSkipToast(null), 2200)
           break
         }
       }
     }, 300)
   }
 
+
   return (
-    <div className="w-full max-w-3xl flex flex-col gap-4 my-20 pt-60">
+    <div className="w-full flex flex-col gap-4">
 
       {/* ── Video frame ─────────────────────────────────────────────────────── */}
       <div className="relative group">
@@ -141,51 +178,67 @@ export default function YouTubeSkipper({ videoId, skipMap }: Props) {
           {/* YouTube iframe */}
           <div id="yt-player" className="w-full h-full" />
 
-          {/* ── Skip toast ──────────────────────────────────────────────── */}
+          {/* ── Skip overlay ──────────────────────────────────────────────── */}
           <AnimatePresence>
             {lastSkipToast && (
               <motion.div
-                initial={{ opacity: 0, y: 12, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -8, scale: 0.95 }}
-                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute bottom-5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2.5 bg-[#0A1628]/90 border border-[#0EA5E9]/25 backdrop-blur-xl rounded-full px-4 py-2 shadow-xl"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.85, y: -20 }}
+                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none"
               >
-                {/* pulse dot */}
-                <span className="relative flex h-2 w-2 shrink-0">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0EA5E9] opacity-60" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#0EA5E9]" />
-                </span>
-                {/* lightning icon */}
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="#0EA5E9" opacity="0.8">
-                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-                </svg>
-                <span className="text-white/80 text-xs font-medium whitespace-nowrap">
-                  {lastSkipToast}
-                </span>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="relative flex flex-col items-center gap-3 bg-black/70 border border-[#0EA5E9]/20 backdrop-blur-xl rounded-2xl px-8 py-6 shadow-[0_0_40px_rgba(14,165,233,0.15)]"
+                >
+                  {/* lightning icon */}
+                  <div className="w-10 h-10 rounded-full bg-[#0EA5E9]/15 border border-[#0EA5E9]/25 flex items-center justify-center">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="#0EA5E9">
+                      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                    </svg>
+                  </div>
+
+                  <div className="text-center">
+                    <p className="text-white/90 text-sm font-semibold">{lastSkipToast.msg}</p>
+                    <p className="text-white/40 text-[11px] mt-1 font-mono">
+                      {formatTime(lastSkipToast.from)} → {formatTime(lastSkipToast.to)}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 text-[10px] text-[#0EA5E9]/60 font-medium">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#0EA5E9] animate-pulse" />
+                    Skipping filler content
+                  </div>
+                </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
 
           {/* top-left badge */}
           <div className="absolute top-3 left-3 z-20 flex items-center gap-1.5 bg-black/50 border border-white/[0.08] backdrop-blur-md rounded-full px-3 py-1">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="#0EA5E9">
-              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-            </svg>
+           <Image src="/logo.png" alt="Condenser AI" width={12} height={12} />
             <span className="text-[10px] font-semibold text-white/60 tracking-wide uppercase">
-              AI Skip Active
+            Condenser AI
             </span>
           </div>
         </div>
       </div>
 
-      {/* ── Stats row ───────────────────────────────────────────────────────── */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: isReady ? 1 : 0, y: isReady ? 0 : 10 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="grid grid-cols-3 gap-3"
-      >
+      {/* ── Stats + Skip map (toggleable) ─────────────────────────────────── */}
+      <AnimatePresence initial={false}>
+        {showStats && (
+          <motion.div
+            initial={{ opacity: 0, y: -10, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: "auto" }}
+            exit={{ opacity: 0, y: -10, height: 0 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="flex flex-col gap-4 overflow-hidden"
+          >
+          <div className="grid grid-cols-3 gap-3">
         {[
           {
             label: "Skips fired",
@@ -251,71 +304,62 @@ export default function YouTubeSkipper({ videoId, skipMap }: Props) {
             </div>
           </motion.div>
         ))}
-      </motion.div>
+      </div>{/* end stats grid */}
 
-      {/* ── Skip map timeline ────────────────────────────────────────────────── */}
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: isReady ? 1 : 0, y: isReady ? 0 : 8 }}
-        transition={{ duration: 0.5, delay: 0.45 }}
-        className="bg-white/[0.03] border border-white/[0.07] rounded-xl px-5 py-4"
-      >
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#0EA5E9] shadow-[0_0_6px_2px_rgba(14,165,233,0.5)]" />
-            <span className="text-[10px] font-semibold text-white/40 tracking-widest uppercase">
-              Skip Map
-            </span>
+          {/* ── Skip map timeline ──────────────────────────────────────────── */}
+          <div className="bg-white/[0.03] border border-white/[0.07] rounded-xl px-5 py-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#0EA5E9] shadow-[0_0_6px_2px_rgba(14,165,233,0.5)]" />
+                <span className="text-[10px] font-semibold text-white/40 tracking-widest uppercase">
+                  Skip Map
+                </span>
+              </div>
+              <span className="text-[10px] text-white/25 font-mono">
+                {skipMap.length} section{skipMap.length !== 1 ? "s" : ""} configured
+              </span>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              {skipMap.map((section, i) => {
+                const duration = section.to - section.from
+                return (
+                  <div
+                    key={i}
+                    className="flex items-center gap-3 group"
+                  >
+                    <span className="text-[10px] font-mono text-white/20 w-4 shrink-0">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+
+                    <div className="flex-1 h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ scaleX: 0 }}
+                        animate={{ scaleX: 1 }}
+                        transition={{ delay: 0.6 + i * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                        className="h-full origin-left bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] rounded-full"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="text-[10px] font-mono text-white/35">{formatTime(section.from)}</span>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="2">
+                        <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <span className="text-[10px] font-mono text-white/35">{formatTime(section.to)}</span>
+                    </div>
+
+                    <span className="text-[9px] font-semibold text-[#0EA5E9]/60 bg-[#0EA5E9]/10 border border-[#0EA5E9]/15 rounded-full px-2 py-0.5 shrink-0">
+                      −{formatTime(duration)}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
           </div>
-          <span className="text-[10px] text-white/25 font-mono">
-            {skipMap.length} section{skipMap.length !== 1 ? "s" : ""} configured
-          </span>
-        </div>
-
-        <div className="flex flex-col gap-2">
-          {skipMap.map((section, i) => {
-            const duration = section.to - section.from
-            return (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: isReady ? 1 : 0, x: isReady ? 0 : -10 }}
-                transition={{ delay: 0.5 + i * 0.08 }}
-                className="flex items-center gap-3 group"
-              >
-                {/* index */}
-                <span className="text-[10px] font-mono text-white/20 w-4 shrink-0">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-
-                {/* bar */}
-                <div className="flex-1 h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
-                  <motion.div
-                    initial={{ scaleX: 0 }}
-                    animate={{ scaleX: 1 }}
-                    transition={{ delay: 0.6 + i * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                    className="h-full origin-left bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] rounded-full"
-                  />
-                </div>
-
-                {/* range */}
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <span className="text-[10px] font-mono text-white/35">{formatTime(section.from)}</span>
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="2">
-                    <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  <span className="text-[10px] font-mono text-white/35">{formatTime(section.to)}</span>
-                </div>
-
-                {/* duration pill */}
-                <span className="text-[9px] font-semibold text-[#0EA5E9]/60 bg-[#0EA5E9]/10 border border-[#0EA5E9]/15 rounded-full px-2 py-0.5 shrink-0">
-                  −{formatTime(duration)}
-                </span>
-              </motion.div>
-            )
-          })}
-        </div>
-      </motion.div>
+        </motion.div>
+      )}
+      </AnimatePresence>
 
     </div>
   )
