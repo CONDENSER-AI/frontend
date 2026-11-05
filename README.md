@@ -1,2 +1,1 @@
-# frontend repo of condenser-ai
-
+# CONDENSER-AI Frontend
